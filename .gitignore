@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Env / secrets  (NEVER commit ANTHROPIC_API_KEY)
+.env
+.env.*
+!.env.example
+
+# Licensed AC7118 text — NEVER commit (PRI copyright)
+private_criteria/
+
+# Django
+db.sqlite3
+/staticfiles/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
