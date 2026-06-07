@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Composite Compliance Tracker</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font: 16px/1.5 system-ui, sans-serif; max-width: 46rem; margin: 4rem auto; padding: 0 1.25rem; }
+    h1 { margin-bottom: .25rem; }
+    .tag { color: #6b7280; font-size: .9rem; }
+    .disclaimer { margin-top: 2rem; padding: 1rem 1.25rem; border-left: 3px solid #d97706; background: rgba(217,119,6,.08); font-size: .9rem; }
+    code { background: rgba(127,127,127,.15); padding: .1rem .35rem; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Composite Compliance Tracker</h1>
+  <p class="tag">NADCAP AC7118 (Composites) audit-readiness &amp; process-data tracker — scaffold (M0).</p>
+
+  <p>Readiness is <strong>computed from linked, valid process records</strong>, not ticked on a
+  checklist. Modules to come: out-time / shelf-life / pot-life engine, cure-cycle records, lot
+  traceability, and evidence-mapped readiness.</p>
+
+  <p>Health check: <a href="/healthz"><code>/healthz</code></a></p>
+
+  <div class="disclaimer">
+    ⚠ Illustrative tool on <strong>synthetic data</strong> — not a quality system of record; a
+    qualified person signs. Does not republish the copyrighted AC7118 text
+    (© Performance Review Institute); criteria are referenced by ID and paraphrased title.
+  </div>
+</body>
+</html>
