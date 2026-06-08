@@ -25,6 +25,8 @@ services:
       DATABASE_URL: postgres://postgres:postgres@db:5432/composite
       DJANGO_DEBUG: "true"
       DJANGO_SECRET_KEY: dev-insecure-change-me
+      # Load the synthetic shop on startup so `docker compose up` is a one-command demo.
+      SEED_ON_START: "true"
     depends_on:
       db:
         condition: service_healthy
