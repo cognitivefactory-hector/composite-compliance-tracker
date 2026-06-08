@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "tracker",
     "tracker.materials",
+    "tracker.cure",
 ]
 
 MIDDLEWARE = [
