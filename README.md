@@ -92,7 +92,7 @@ CI (GitHub Actions) runs `ruff` + `pytest` against a Postgres service on every p
 
 The repo ships a [`render.yaml`](./render.yaml) Blueprint (Dockerized web service + Postgres, `/healthz` health check, `SEED_ON_START=true` so the public demo is never empty).
 
-1. On Render: **New → Blueprint**, connect this repo. It provisions the web service + database and generates `DJANGO_SECRET_KEY`.
+1. On Render: **New → Blueprint**, connect this repo. It provisions the web service + a Basic Postgres (a workspace allows only one *free* Postgres and free instances expire after 30 days, so the Blueprint uses a small paid tier for a persistent demo) and generates `DJANGO_SECRET_KEY`.
 2. Optional: set `ANTHROPIC_API_KEY` in the dashboard to enable the Claude assist.
 3. Optional custom domain (`composite.hector-garza.com`): add it in Render and uncomment `DJANGO_ALLOWED_HOSTS` / `DJANGO_CSRF_TRUSTED_ORIGINS` in `render.yaml`. (`RENDER_EXTERNAL_HOSTNAME` is trusted automatically.)
 
