@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Composite Compliance Tracker{% endblock %}</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%231b1d22'/><circle cx='8' cy='8' r='3' fill='%232f7d4f'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #f4f3ee;
+      --panel: #fbfaf6;
+      --panel-2: #eceae1;
+      --ink: #1b1d22;
+      --ink-2: #5b5e66;
+      --rule: rgba(27, 29, 34, 0.14);
+      --rule-strong: rgba(27, 29, 34, 0.28);
+      --accent: #1f4fd6;
+      --ok: #2f7d4f;
+      --warn: #b45309;
+      --crit: #c2410c;
+      --bad: #b91c1c;
+      --na: #6b7280;
+      --shadow: 0 1px 0 rgba(27,29,34,0.04), 0 8px 24px -18px rgba(27,29,34,0.35);
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      color: var(--ink);
+      background-color: var(--paper);
+      background-image:
+        linear-gradient(var(--rule) 1px, transparent 1px),
+        linear-gradient(90deg, var(--rule) 1px, transparent 1px);
+      background-size: 28px 28px;
+      background-position: -1px -1px;
+      line-height: 1.5;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .mono { font-family: "IBM Plex Mono", monospace; }
+    .micro {
+      font-family: "IBM Plex Mono", monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 11px;
+      color: var(--ink-2);
+    }
+    h1, h2, h3 { font-family: "Archivo", sans-serif; font-weight: 700; letter-spacing: -0.01em; margin: 0; }
+
+    header.top {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; gap: 24px;
+      padding: 14px 28px;
+      background: rgba(244,243,238,0.92);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid var(--rule-strong);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-family: "Archivo"; font-weight: 800; letter-spacing: 0.02em; }
+    .brand .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px rgba(47,125,79,0.18); }
+    header.top nav { display: flex; gap: 18px; margin-left: auto; }
+    header.top nav a { color: var(--ink-2); }
+    header.top nav a:hover { color: var(--ink); text-decoration: none; }
+
+    main { max-width: 1100px; margin: 0 auto; padding: 36px 28px 72px; }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      padding: 22px 24px;
+      box-shadow: var(--shadow);
+    }
+    .stack > * + * { margin-top: 18px; }
+    .grid { display: grid; gap: 18px; }
+    @media (min-width: 820px) { .grid.cols-2 { grid-template-columns: 1fr 1fr; } .grid.cols-3 { grid-template-columns: 2fr 1fr; } }
+
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: "IBM Plex Mono", monospace; font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      padding: 3px 9px; border-radius: 999px; border: 1px solid currentColor;
+    }
+    .chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .s-compliant, .s-ok, .s-pass { color: var(--ok); }
+    .s-gap, .s-warning { color: var(--warn); }
+    .s-critical { color: var(--crit); }
+    .s-breach, .s-fail { color: var(--bad); }
+    .s-na { color: var(--na); }
+    .tint { background: color-mix(in srgb, currentColor 9%, transparent); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { text-align: left; font-family: "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; color: var(--ink-2); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--rule-strong); }
+    td { padding: 10px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+
+    .bar { position: relative; height: 12px; background: var(--panel-2); border-radius: 999px; overflow: hidden; border: 1px solid var(--rule); }
+    .bar > span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; }
+    .gauge { position: relative; height: 26px; background: var(--panel-2); border-radius: 6px; border: 1px solid var(--rule); overflow: hidden; }
+    .gauge > .fill { position: absolute; left: 0; top: 0; bottom: 0; }
+    .gauge > .tick { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--rule-strong); }
+    .gauge > .tick > b { position: absolute; top: -16px; transform: translateX(-50%); font-family: "IBM Plex Mono", monospace; font-size: 9px; color: var(--ink-2); font-weight: 600; }
+
+    .big-num { font-family: "Archivo"; font-weight: 800; font-size: clamp(48px, 9vw, 92px); line-height: 0.9; letter-spacing: -0.03em; }
+    .kpi { display: flex; gap: 26px; flex-wrap: wrap; }
+    .kpi > div { min-width: 70px; }
+    .kpi .n { font-family: "Archivo"; font-weight: 700; font-size: 26px; }
+
+    .lede { color: var(--ink-2); max-width: 60ch; }
+    .crumb { margin-bottom: 22px; }
+    .pagehead { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
+
+    .timeline { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--rule-strong); }
+    .timeline li { position: relative; padding: 6px 0 6px 20px; }
+    .timeline li::before { content: ""; position: absolute; left: -7px; top: 12px; width: 10px; height: 10px; border-radius: 50%; background: var(--panel); border: 2px solid var(--ink-2); }
+    .timeline li.out::before { border-color: var(--crit); }
+    .timeline li.in::before { border-color: var(--ok); }
+
+    footer.disclaimer { border-top: 1px solid var(--rule-strong); padding: 22px 28px 40px; max-width: 1100px; margin: 0 auto; color: var(--ink-2); font-family: "IBM Plex Mono", monospace; font-size: 11.5px; line-height: 1.7; }
+    .fade { opacity: 0; transform: translateY(8px); animation: rise 0.5s ease forwards; }
+    @keyframes rise { to { opacity: 1; transform: none; } }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="{% url 'dashboard' %}"><span class="dot"></span>AC7118&nbsp;READINESS</a>
+    <nav class="micro">
+      <a href="{% url 'dashboard' %}">Dashboard</a>
+      <a href="{% url 'trace_index' %}">Traceability</a>
+      <a href="/admin/">Admin</a>
+    </nav>
+  </header>
+  <main>{% block content %}{% endblock %}</main>
+  <footer class="disclaimer">
+    ⚠ Illustrative tool on <strong>synthetic data</strong> — not a quality system of record; a qualified person dispositions and signs.
+    Does not republish the copyrighted AC7118 text (© Performance Review Institute); criteria are referenced by ID and paraphrased title only.
+    Readiness is <strong>computed from linked records</strong>, never self-attested on a checkbox.
+  </footer>
+</body>
+</html>

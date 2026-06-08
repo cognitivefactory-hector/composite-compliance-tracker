@@ -1,0 +1,27 @@
+{% extends "tracker/base.html" %}
+{% block title %}Traceability · {{ block.super }}{% endblock %}
+{% block content %}
+<div class="pagehead"><h1>Traceability</h1><span class="micro">lot → kit → part → cure</span></div>
+<p class="lede">Material lot genealogy through kits and parts to the cure cycle — the chain an auditor follows to confirm a part's pedigree.</p>
+
+{% for kit in kits %}
+<section class="panel stack" style="margin-top:18px;">
+  <div style="display:flex; justify-content:space-between; align-items:baseline;">
+    <span class="mono" style="font-weight:600; font-size:16px;">{{ kit.kit_number }}</span>
+    <span class="micro">{{ kit.created_at|date:"Y-m-d" }}</span>
+  </div>
+  <div>
+    <div class="micro">built from lots</div>
+    {% for lot in kit.lots.all %}<a class="mono" href="{% url 'lot_detail' lot.pk %}" style="margin-right:14px;">{{ lot.lot_number }}</a>{% endfor %}
+  </div>
+  <div>
+    <div class="micro">parts</div>
+    {% for part in kit.parts.all %}
+      <div style="margin-left:6px;">↳ <span class="mono">{{ part.part_number }} / {{ part.serial }}</span>{% if part.cure_run %} · cured in <a href="{% url 'cure_detail' part.cure_run.pk %}">CURE-{{ part.cure_run.pk }}</a>{% endif %}</div>
+    {% endfor %}
+  </div>
+</section>
+{% empty %}
+<p class="lede" style="margin-top:18px;">No genealogy records — run <span class="mono">manage.py seed_shop</span>.</p>
+{% endfor %}
+{% endblock %}

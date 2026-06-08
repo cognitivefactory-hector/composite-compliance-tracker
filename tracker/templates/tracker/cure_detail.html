@@ -1,0 +1,61 @@
+{% extends "tracker/base.html" %}
+{% block title %}Cure {{ run.pk }} · {{ block.super }}{% endblock %}
+{% block content %}
+<div class="crumb micro"><a href="{% url 'dashboard' %}">← Dashboard</a></div>
+
+<div class="pagehead">
+  <h1 class="mono">CURE-{{ run.pk }}</h1>
+  {% if evaluation.passed %}<span class="chip s-pass tint">pass — in window</span>{% else %}<span class="chip s-fail tint">fail — out of window</span>{% endif %}
+</div>
+<div class="micro">{{ run.spec.name }}</div>
+
+{% if missing %}
+<section class="panel stack" style="margin-top:18px; border-left:3px solid var(--bad);">
+  <div class="micro s-gap">Incomplete §8.7.2 record</div>
+  <p style="margin:0;">Missing required fields: <span class="mono">{{ missing|join:", " }}</span></p>
+</section>
+{% endif %}
+
+<section class="panel" style="margin-top:24px;">
+  <div class="micro" style="margin-bottom:8px;">Measured profile vs. spec window</div>
+  {{ chart|safe }}
+</section>
+
+<div class="grid cols-2" style="margin-top:18px;">
+  <section class="panel stack">
+    <div class="micro">Window checks</div>
+    <table>
+      <tbody>
+      {% for check in evaluation.checks %}
+        <tr>
+          <td class="mono">{{ check.name }}</td>
+          <td>{{ check.detail }}</td>
+          <td style="text-align:right;">{% if check.passed %}<span class="chip s-pass tint">pass</span>{% else %}<span class="chip s-fail tint">fail</span>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel stack">
+    <div class="micro">Record (AC7118 §8.7.2)</div>
+    <table>
+      <tbody>
+        <tr><td>Facility</td><td class="mono">{{ run.facility|default:"—" }}</td></tr>
+        <tr><td>Equipment</td><td class="mono">{{ run.equipment_id|default:"—" }}</td></tr>
+        <tr><td>Started</td><td class="mono">{{ run.started_at|date:"Y-m-d H:i"|default:"—" }}</td></tr>
+        <tr><td>Part serials</td><td class="mono">{{ run.part_serials|join:", "|default:"—" }}</td></tr>
+        <tr><td>Thermocouples</td><td>{% if run.thermocouple_present %}<span class="chip s-pass tint">recorded</span>{% else %}<span class="chip s-fail tint">missing</span>{% endif %}</td></tr>
+        <tr><td>Process panel</td><td>{% if run.process_panel_present %}<span class="chip s-pass tint">referenced</span>{% else %}<span class="chip s-fail tint">missing</span>{% endif %}</td></tr>
+      </tbody>
+    </table>
+  </section>
+</div>
+
+{% if parts %}
+<section class="panel stack" style="margin-top:18px;">
+  <div class="micro">Parts in this cycle</div>
+  <div>{% for p in parts %}<span class="mono" style="margin-right:14px;">{{ p.part_number }} / {{ p.serial }}</span>{% endfor %}</div>
+</section>
+{% endif %}
+{% endblock %}

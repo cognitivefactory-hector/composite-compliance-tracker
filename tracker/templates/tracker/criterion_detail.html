@@ -1,0 +1,89 @@
+{% extends "tracker/base.html" %}
+{% load readiness_extras %}
+{% block title %}§{{ criterion.criterion_id }} · {{ block.super }}{% endblock %}
+{% block content %}
+<div class="crumb micro"><a href="{% url 'dashboard' %}">← Dashboard</a></div>
+
+<div class="pagehead">
+  <h1 class="mono">§{{ criterion.criterion_id }}</h1>
+  <span class="chip s-{{ result.status }} tint">{{ result.status }}</span>
+</div>
+<p class="lede" style="font-size:18px; color:var(--ink);">{{ criterion.title }}</p>
+<div class="micro" style="margin-top:8px;">section §{{ criterion.section }} · scope {{ criterion.scope }} · evidence: {{ criterion.get_evidence_type_display }}</div>
+
+<section class="panel stack" style="margin-top:24px;">
+  <div class="micro">Computed result</div>
+  <p style="margin:0;">{{ result.reason }}</p>
+  <p class="micro" style="margin:0;">This status is recomputed from records on every view — it is never a stored tick.</p>
+</section>
+
+{% if lot_evidence %}
+<section class="panel stack" style="margin-top:18px;">
+  <div class="micro">Evidence — material lots</div>
+  <table>
+    <thead><tr><th>Lot</th><th>Out-time</th><th>Shelf</th><th>Alert</th><th></th></tr></thead>
+    <tbody>
+    {% for row in lot_evidence %}
+      <tr {% if row.is_problem %}style="background:color-mix(in srgb, var(--bad) 7%, transparent);"{% endif %}>
+        <td class="mono"><a href="{% url 'lot_detail' row.lot.pk %}">{{ row.lot.lot_number }}</a></td>
+        <td>{{ row.status.fraction|pct }}% · {{ row.status.remaining|as_days }} left</td>
+        <td>{% if row.expired %}<span class="chip s-breach tint">expired</span>{% else %}in date{% endif %}</td>
+        <td><span class="chip s-{{ row.status.level }} tint">{{ row.status.level }}</span></td>
+        <td style="text-align:right;">{% if row.is_problem %}<span class="micro s-gap">⚠ blocks readiness</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
+{% if cure_evidence %}
+<section class="panel stack" style="margin-top:18px;">
+  <div class="micro">Evidence — cure runs</div>
+  <table>
+    <thead><tr><th>Run</th><th>Spec</th><th>Record</th><th></th></tr></thead>
+    <tbody>
+    {% for row in cure_evidence %}
+      <tr>
+        <td class="mono"><a href="{% url 'cure_detail' row.run.pk %}">CURE-{{ row.run.pk }}</a></td>
+        <td>{{ row.run.spec.name }}</td>
+        <td>{% if row.missing %}<span class="chip s-fail tint">incomplete</span>{% else %}<span class="chip s-pass tint">complete</span>{% endif %}</td>
+        <td style="text-align:right;">{% if row.evaluation.passed %}<span class="chip s-pass tint">in window</span>{% else %}<span class="chip s-fail tint">out of window</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
+{% if criterion.evidence_type == 'documentation' %}
+<section class="panel stack" style="margin-top:18px;">
+  <div class="micro">Evidence — documentation</div>
+  {% if status_record.is_na %}
+    <p>Marked <strong>not applicable</strong>: {{ status_record.na_explanation }}</p>
+  {% elif status_record.procedure_reference %}
+    <p>Attested against procedure <span class="mono">{{ status_record.procedure_reference }}</span>.</p>
+    {% if status_record.attested %}
+      <p class="micro">Signed by {{ status_record.signed_by }} · {{ status_record.signed_at|date:"Y-m-d" }}</p>
+    {% else %}
+      <p class="micro s-gap">Awaiting human attestation.</p>
+    {% endif %}
+  {% else %}
+    <p class="s-gap">No procedure reference attached — cannot go compliant on a bare tick.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if criterion.ncrs.all %}
+<section class="panel stack" style="margin-top:18px;">
+  <div class="micro">Nonconformance records</div>
+  {% for ncr in criterion.ncrs.all %}
+    <div style="border-left:3px solid var(--bad); padding-left:12px;">
+      <span class="chip {% if ncr.is_closed %}s-compliant{% else %}s-breach{% endif %} tint">{% if ncr.is_closed %}closed{% else %}open{% endif %}</span>
+      <span class="micro">NCR-{{ ncr.pk }} · {{ ncr.opened_at|date:"Y-m-d" }}</span>
+      <p style="margin:6px 0 0;">{{ ncr.description }}</p>
+    </div>
+  {% endfor %}
+</section>
+{% endif %}
+{% endblock %}

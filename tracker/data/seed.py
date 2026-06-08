@@ -17,6 +17,7 @@ from django.utils import timezone
 from tracker.compliance.models import NCR, Criterion, CriterionStatus, EvidenceLink
 from tracker.cure.models import CureRun, CureSpec
 from tracker.materials.models import ColdStorageEvent, Material, MaterialLot
+from tracker.trace.models import Kit, Part
 
 from . import criteria_repr
 
@@ -40,6 +41,8 @@ _PASS_PROFILE = [
 
 
 def _clear() -> None:
+    Part.objects.all().delete()
+    Kit.objects.all().delete()
     EvidenceLink.objects.all().delete()
     NCR.objects.all().delete()
     CriterionStatus.objects.all().delete()
@@ -183,6 +186,21 @@ def _seed_criteria(now: datetime) -> dict[str, Criterion]:
     return criteria
 
 
+def _seed_genealogy(
+    now: datetime, lots: dict[str, MaterialLot], runs: list[CureRun]
+) -> None:
+    """Build a lot -> kit -> part -> cure genealogy from the healthy prepreg lot."""
+    kit = Kit.objects.create(kit_number="KIT-3007", created_at=now - timedelta(days=35))
+    kit.lots.add(lots["healthy_prepreg"], lots["healthy_adhesive"])
+    for serial in ("PN-1001", "PN-1002"):
+        Part.objects.create(
+            part_number="SKIN-LH-OUTBD",
+            serial=serial,
+            kit=kit,
+            cure_run=runs[0] if runs else None,
+        )
+
+
 @transaction.atomic
 def seed(now: datetime | None = None) -> dict[str, int]:
     """Reset and populate the synthetic shop. Returns a summary of counts."""
@@ -192,6 +210,7 @@ def seed(now: datetime | None = None) -> dict[str, int]:
     lots = _seed_materials_and_lots(now)
     runs = _seed_cure(now)
     criteria = _seed_criteria(now)
+    _seed_genealogy(now, lots, runs)
 
     # Wire explicit evidence links so a status can be clicked through to a record.
     c_out_time = criteria["5.1.12"]
@@ -217,4 +236,6 @@ def seed(now: datetime | None = None) -> dict[str, int]:
         "cure_runs": CureRun.objects.count(),
         "criteria": Criterion.objects.count(),
         "ncrs": NCR.objects.count(),
+        "kits": Kit.objects.count(),
+        "parts": Part.objects.count(),
     }

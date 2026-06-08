@@ -1,0 +1,116 @@
+{% extends "tracker/base.html" %}
+{% load readiness_extras %}
+{% block content %}
+<div class="pagehead">
+  <h1>Audit readiness</h1>
+  <span class="micro">PAR prepreg hand-layup · AC7118</span>
+</div>
+<p class="lede">Every status below is <strong>computed from the underlying records</strong> as of
+  <span class="mono">{{ now|date:"Y-m-d H:i" }} UTC</span>. A criterion turns compliant only when its
+  linked evidence exists and is in limit — click any item to land on the proof.</p>
+
+<div class="grid cols-3" style="margin-top:26px;">
+  <div class="panel fade">
+    <div class="micro">Overall readiness</div>
+    <div style="display:flex; align-items:flex-end; gap:18px; margin-top:6px;">
+      <div class="big-num {% if overall.percent == 100 %}s-compliant{% else %}s-gap{% endif %}">{{ overall.percent }}<span style="font-size:0.4em;">%</span></div>
+      <div class="kpi" style="padding-bottom:8px;">
+        <div><div class="n s-compliant">{{ overall.compliant }}</div><div class="micro">compliant</div></div>
+        <div><div class="n s-gap">{{ overall.gap }}</div><div class="micro">gaps</div></div>
+        <div><div class="n s-na">{{ overall.na }}</div><div class="micro">n/a</div></div>
+        <div><div class="n">{{ overall.applicable }}</div><div class="micro">applicable</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel fade" style="animation-delay:.06s;">
+    <div class="micro">Open NCRs</div>
+    <div class="big-num {% if open_ncrs %}s-breach{% else %}s-compliant{% endif %}">{{ open_ncrs|length }}</div>
+    <div class="micro" style="margin-top:8px;">nonconformance records awaiting disposition</div>
+  </div>
+</div>
+
+<div class="grid cols-2" style="margin-top:18px;">
+  <section class="panel fade stack" style="animation-delay:.1s;">
+    <div class="micro">Readiness by section</div>
+    {% for s in sections %}
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+        <span class="mono" style="font-weight:600;">§{{ s.label }}</span>
+        <span class="mono" style="font-size:12px; color:var(--ink-2);">{{ s.compliant }}/{{ s.applicable }}{% if s.na %} · {{ s.na }} n/a{% endif %}</span>
+      </div>
+      <div class="bar" style="margin-top:6px;"><span style="width:{{ s.percent|clamp100 }}%; background:{% if s.percent == 100 %}var(--ok){% elif s.gap %}var(--warn){% else %}var(--na){% endif %};"></span></div>
+    </div>
+    {% endfor %}
+  </section>
+
+  <section class="panel fade stack" style="animation-delay:.14s;">
+    <div class="micro">Open gaps</div>
+    {% if gaps %}
+    <table>
+      <tbody>
+      {% for g in gaps %}
+        <tr>
+          <td class="mono" style="white-space:nowrap;"><a href="{% url 'criterion_detail' g.criterion.criterion_id %}">§{{ g.criterion.criterion_id }}</a></td>
+          <td>{{ g.criterion.title }}<div class="micro" style="margin-top:2px;">{{ g.result.reason }}</div></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="lede">No open gaps.</p>{% endif %}
+  </section>
+</div>
+
+<section class="panel fade stack" style="margin-top:18px; animation-delay:.18s;">
+  <div class="micro">Out-time watch — material lots</div>
+  <table>
+    <thead><tr><th>Lot</th><th>Material</th><th>Out-time</th><th>Shelf</th><th>Alert</th></tr></thead>
+    <tbody>
+    {% for row in lots %}
+      <tr>
+        <td class="mono"><a href="{% url 'lot_detail' row.lot.pk %}">{{ row.lot.lot_number }}</a></td>
+        <td>{{ row.lot.material.name }}</td>
+        <td style="min-width:200px;">
+          <div class="bar"><span style="width:{{ row.status.fraction|pct|clamp100 }}%; background:var(--{% if row.status.level == 'breach' %}bad{% elif row.status.level == 'critical' %}crit{% elif row.status.level == 'warning' %}warn{% else %}ok{% endif %});"></span></div>
+          <div class="micro" style="margin-top:3px;">{{ row.status.fraction|pct }}% of limit · {{ row.status.remaining|as_days }} left</div>
+        </td>
+        <td>{% if row.expired %}<span class="chip s-breach tint">expired</span>{% else %}<span class="mono" style="font-size:12px; color:var(--ink-2);">in date</span>{% endif %}</td>
+        <td><span class="chip s-{{ row.status.level }} tint">{{ row.status.level }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<div class="grid cols-2" style="margin-top:18px;">
+  <section class="panel fade stack" style="animation-delay:.22s;">
+    <div class="micro">Cure runs</div>
+    <table>
+      <tbody>
+      {% for run in cure_runs %}
+        <tr>
+          <td class="mono"><a href="{% url 'cure_detail' run.pk %}">CURE-{{ run.pk }}</a></td>
+          <td>{{ run.spec.name }}<div class="micro" style="margin-top:2px;">{{ run.facility }}</div></td>
+          <td style="text-align:right;">{% if run.evaluate.passed %}<span class="chip s-pass tint">pass</span>{% else %}<span class="chip s-fail tint">fail</span>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel fade stack" style="animation-delay:.26s;">
+    <div class="micro">Open NCRs</div>
+    {% if open_ncrs %}
+    <table>
+      <tbody>
+      {% for ncr in open_ncrs %}
+        <tr>
+          <td class="mono" style="white-space:nowrap;"><a href="{% url 'criterion_detail' ncr.criterion.criterion_id %}">§{{ ncr.criterion.criterion_id }}</a></td>
+          <td>{{ ncr.description }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="lede">No open NCRs.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}
