@@ -1,8 +1,10 @@
 from django.db import connection
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
+from tracker.assist import client as assist
 from tracker.compliance.models import NCR, Criterion
 from tracker.cure.charts import cure_profile_html
 from tracker.cure.models import CureRun
@@ -54,7 +56,12 @@ def criterion_detail(request, criterion_id):
     result = evaluate_criterion(criterion, as_of=now)
     problem_ids = set(result.evidence_ids)
 
-    context = {"criterion": criterion, "result": result, "now": now}
+    context = {
+        "criterion": criterion,
+        "result": result,
+        "now": now,
+        "assist_enabled": assist.is_enabled(),
+    }
     if criterion.evidence_type == Criterion.EvidenceType.OUT_TIME:
         context["lot_evidence"] = [
             {
@@ -107,6 +114,23 @@ def cure_detail(request, pk):
             "parts": run.parts.all(),
         },
     )
+
+
+@require_POST
+def draft_ncr(request, criterion_id):
+    """Advisory: draft an editable NCR explanation for a criterion via Claude.
+
+    Gated on ANTHROPIC_API_KEY (404 when disabled). Drafting persists nothing
+    and does not change the criterion's computed readiness.
+    """
+    if not assist.is_enabled():
+        raise Http404("Assist is disabled.")
+    criterion = get_object_or_404(Criterion, criterion_id=criterion_id)
+    result = evaluate_criterion(criterion, as_of=timezone.now())
+    text = assist.draft_ncr_explanation(
+        criterion.criterion_id, criterion.title, result.reason
+    )
+    return render(request, "tracker/_assist_draft.html", {"text": text})
 
 
 def trace_index(request):

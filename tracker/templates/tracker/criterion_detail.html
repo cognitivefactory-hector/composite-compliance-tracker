@@ -15,6 +15,19 @@
   <div class="micro">Computed result</div>
   <p style="margin:0;">{{ result.reason }}</p>
   <p class="micro" style="margin:0;">This status is recomputed from records on every view — it is never a stored tick.</p>
+  {% if assist_enabled and result.status == 'gap' %}
+  <div>
+    <button class="btn"
+            hx-post="{% url 'draft_ncr' criterion.criterion_id %}"
+            hx-target="#assist-draft"
+            hx-swap="innerHTML"
+            hx-indicator="#assist-draft">
+      ✨ Draft NCR explanation
+    </button>
+    <span class="micro" style="margin-left:8px;">advisory only — never decides compliance</span>
+    <div id="assist-draft"><span class="assist-pending htmx-indicator">Drafting…</span></div>
+  </div>
+  {% endif %}
 </section>
 
 {% if lot_evidence %}

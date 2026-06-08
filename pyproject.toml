@@ -15,12 +15,13 @@ dependencies = [
     "gunicorn>=23.0",
     "whitenoise>=6.7",
     "plotly>=5.24",
+    # Claude assist is gated at runtime on ANTHROPIC_API_KEY; the package is
+    # always installed so the feature works wherever deployed, but stays
+    # advisory-only and never decides compliance or computes a limit.
+    "anthropic>=0.40",
 ]
 
-# Optional, gated Claude assist — advisory only, never decides compliance or
-# computes a limit. The app is fully usable without this installed.
 [project.optional-dependencies]
-assist = ["anthropic>=0.40"]
 dev = [
     "pytest>=8.3",
     "pytest-django>=4.9",
