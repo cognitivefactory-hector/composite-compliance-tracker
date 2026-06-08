@@ -31,6 +31,15 @@ def test_seed_is_idempotent():
     assert MaterialLot.objects.count() == 4
 
 
+def test_seed_shop_if_empty_skips_when_already_populated():
+    from django.core.management import call_command
+
+    seed(now=NOW)
+    first = Criterion.objects.first()
+    call_command("seed_shop", "--if-empty")  # must not wipe/reseed
+    assert Criterion.objects.first().pk == first.pk  # same rows — no reseed
+
+
 def test_out_time_criterion_is_not_ready_because_of_an_expired_lot():
     # The thesis, on screen: §5.1.12 is GAP because an active lot is expired.
     seed(now=NOW)
