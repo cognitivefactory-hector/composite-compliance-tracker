@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/htmx.org@2.0.3" integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq" crossorigin="anonymous"></script>
   <style>
     :root {
       --paper: #f4f3ee;
@@ -92,6 +93,12 @@
     .s-na { color: var(--na); }
     .tint { background: color-mix(in srgb, currentColor 9%, transparent); }
 
+    .btn { font-family: "IBM Plex Mono", monospace; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; padding: 8px 14px; border: 1px solid var(--accent); color: var(--accent); background: transparent; border-radius: 4px; cursor: pointer; }
+    .btn:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+    .btn[disabled], .btn.htmx-request { opacity: .5; pointer-events: none; }
+    .draft-box { margin-top: 14px; padding: 14px 16px; border-left: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 5%, transparent); white-space: pre-wrap; border-radius: 0 4px 4px 0; }
+    .assist-pending { color: var(--ink-2); font-size: 13px; }
+
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
     th { text-align: left; font-family: "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: 0.1em; font-size: 11px; color: var(--ink-2); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--rule-strong); }
     td { padding: 10px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
@@ -124,7 +131,7 @@
     @keyframes rise { to { opacity: 1; transform: none; } }
   </style>
 </head>
-<body>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
   <header class="top">
     <a class="brand" href="{% url 'dashboard' %}"><span class="dot"></span>AC7118&nbsp;READINESS</a>
     <nav class="micro">
