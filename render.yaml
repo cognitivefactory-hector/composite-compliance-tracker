@@ -28,7 +28,9 @@ services:
         sync: false
 
 databases:
+  # Paid Postgres (Basic): a workspace may only hold one *free* Postgres and
+  # free instances expire after 30 days, so a persistent demo uses a paid tier.
   - name: composite-db
-    plan: free
+    plan: basic-256mb
     databaseName: composite
     user: composite
