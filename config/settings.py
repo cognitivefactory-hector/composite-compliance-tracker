@@ -26,15 +26,22 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-change-me")
 
 DEBUG = _env_bool("DJANGO_DEBUG", default=True)
 
+# The production custom domain is baked into the default so a plain code deploy
+# serves it — Render auto-deploys code on push but does NOT auto-apply env-var
+# changes from render.yaml (those need a manual Blueprint sync). Override with
+# DJANGO_ALLOWED_HOSTS if the domain ever changes.
+PROD_HOST = "composite.hector-garza.com"
 ALLOWED_HOSTS = _env_list(
-    "DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0"
+    "DJANGO_ALLOWED_HOSTS", f"{PROD_HOST},localhost,127.0.0.1,0.0.0.0"
 )
 # Convenience for Render: trust its injected external hostname automatically.
 _render_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 if _render_host:
     ALLOWED_HOSTS.append(_render_host)
 
-CSRF_TRUSTED_ORIGINS = _env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
+CSRF_TRUSTED_ORIGINS = _env_list(
+    "DJANGO_CSRF_TRUSTED_ORIGINS", f"https://{PROD_HOST}"
+)
 if _render_host:
     CSRF_TRUSTED_ORIGINS.append(f"https://{_render_host}")
 
