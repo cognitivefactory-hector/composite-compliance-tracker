@@ -42,3 +42,7 @@ extend-exclude = ["migrations"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "DJ"]
+
+[tool.ruff.lint.per-file-ignores]
+# The criteria catalog is a readable one-row-per-criterion data table.
+"tracker/data/criteria_repr.py" = ["E501"]
