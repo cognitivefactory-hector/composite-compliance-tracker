@@ -14,6 +14,15 @@ services:
         fromDatabase:
           name: composite-db
           property: connectionString
+      # Load the synthetic shop on each start so the public demo is never empty.
+      - key: SEED_ON_START
+        value: "true"
+      # For a custom domain (e.g. composite.hector-garza.com), add it here and to
+      # DJANGO_CSRF_TRUSTED_ORIGINS. RENDER_EXTERNAL_HOSTNAME is trusted automatically.
+      # - key: DJANGO_ALLOWED_HOSTS
+      #   value: "composite.hector-garza.com"
+      # - key: DJANGO_CSRF_TRUSTED_ORIGINS
+      #   value: "https://composite.hector-garza.com"
       # Set in the Render dashboard only if enabling the optional Claude assist.
       - key: ANTHROPIC_API_KEY
         sync: false
