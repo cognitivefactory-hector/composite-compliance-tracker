@@ -1,0 +1,71 @@
+{% extends "tracker/base.html" %}
+{% load readiness_extras %}
+{% block title %}Lot {{ lot.lot_number }} · {{ block.super }}{% endblock %}
+{% block content %}
+<div class="crumb micro"><a href="{% url 'dashboard' %}">← Dashboard</a></div>
+
+<div class="pagehead">
+  <h1 class="mono">{{ lot.lot_number }}</h1>
+  <span class="chip s-{{ status.level }} tint">{{ status.level }}</span>
+  {% if expired %}<span class="chip s-breach tint">shelf expired</span>{% endif %}
+</div>
+<div class="micro">{{ lot.material.name }} · {{ lot.material.get_kind_display }}</div>
+
+<section class="panel stack" style="margin-top:24px;">
+  <div class="micro">Accumulated out-time vs. limit</div>
+  <div class="gauge" style="margin-top:18px;">
+    <div class="fill" style="width:{{ status.fraction|pct|clamp100 }}%; background:var(--{% if status.level == 'breach' %}bad{% elif status.level == 'critical' %}crit{% elif status.level == 'warning' %}warn{% else %}ok{% endif %});"></div>
+    <div class="tick" style="left:80%;"><b>80</b></div>
+    <div class="tick" style="left:90%;"><b>90</b></div>
+    <div class="tick" style="left:100%;"><b>100</b></div>
+  </div>
+  <div class="kpi" style="margin-top:18px;">
+    <div><div class="n mono">{{ status.fraction|pct }}%</div><div class="micro">of limit</div></div>
+    <div><div class="n mono">{{ status.accumulated|as_days }}</div><div class="micro">accumulated</div></div>
+    <div><div class="n mono">{{ status.remaining|as_days }}</div><div class="micro">remaining</div></div>
+    <div><div class="n mono">{{ limit.value|as_days }}</div><div class="micro">limit ({{ limit.source }})</div></div>
+  </div>
+  {% if limit.source == 'engineering' %}<p class="micro">⚙ Engineering override governs this limit (takes precedence over the material default).</p>{% endif %}
+</section>
+
+<div class="grid cols-2" style="margin-top:18px;">
+  <section class="panel stack">
+    <div class="micro">Shelf &amp; pot life</div>
+    <table>
+      <tbody>
+        <tr><td>Manufactured</td><td class="mono">{{ lot.manufactured_at|date:"Y-m-d" }}</td></tr>
+        <tr><td>Shelf expiration</td><td class="mono">{{ lot.expiration|date:"Y-m-d" }} {% if expired %}<span class="chip s-breach tint">expired</span>{% endif %}</td></tr>
+        {% if pot_remaining is not None %}<tr><td>Pot life remaining</td><td class="mono">{{ pot_remaining|as_days }}</td></tr>{% endif %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel stack">
+    <div class="micro">Freeze / thaw history</div>
+    {% if events %}
+    <ul class="timeline">
+      {% for e in events %}
+        <li class="{% if e.event_type == 'removed' %}out{% else %}in{% endif %}">
+          <span class="mono" style="font-weight:600;">{{ e.get_event_type_display|default:e.event_type }}</span>
+          <span class="micro">{{ e.occurred_at|date:"Y-m-d H:i" }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="lede">No cold-storage events logged — no out-time record for this lot.</p>{% endif %}
+  </section>
+</div>
+
+{% if kits %}
+<section class="panel stack" style="margin-top:18px;">
+  <div class="micro">Genealogy — kits &amp; parts using this lot</div>
+  {% for kit in kits %}
+    <div>
+      <span class="mono" style="font-weight:600;">{{ kit.kit_number }}</span>
+      {% for part in kit.parts.all %}
+        <div class="micro" style="margin-left:14px;">↳ {{ part.part_number }} / {{ part.serial }}{% if part.cure_run %} · <a href="{% url 'cure_detail' part.cure_run.pk %}">CURE-{{ part.cure_run.pk }}</a>{% endif %}</div>
+      {% endfor %}
+    </div>
+  {% endfor %}
+</section>
+{% endif %}
+{% endblock %}

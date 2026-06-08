@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "tracker.materials",
     "tracker.cure",
     "tracker.compliance",
+    "tracker.trace",
     "tracker.data",
 ]
 
