@@ -102,7 +102,7 @@ Secrets are never committed — `.env` is gitignored.
 
 ## Links
 
-- 🔗 **Live demo:** _TBD (deploy via the Render Blueprint above)_
+- 🔗 **Live demo:** https://composite-compliance-tracker.onrender.com
 - 🧠 **Decision record:** [`DECISIONS.md`](./DECISIONS.md) — why readiness is computed from data, the rejected tick-box checklist, the accepted scoped-but-deep coverage
 - 📋 **Spec & plan:** [`SPEC.md`](./SPEC.md) · [`PLAN.md`](./PLAN.md)
 - 🎥 **Whiteboard walkthrough:** _deferred (no mic yet) — `DECISIONS.md` carries the judgment for now_
