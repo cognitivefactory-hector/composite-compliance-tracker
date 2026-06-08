@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "tracker",
     "tracker.materials",
     "tracker.cure",
+    "tracker.compliance",
 ]
 
 MIDDLEWARE = [

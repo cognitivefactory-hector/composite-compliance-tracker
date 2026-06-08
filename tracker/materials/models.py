@@ -45,6 +45,8 @@ class MaterialLot(models.Model):
     out_time_limit_override = models.DurationField(null=True, blank=True)
     # When mixed resin/adhesive's pot life started; null until mixed.
     mixed_at = models.DateTimeField(null=True, blank=True)
+    # Retired lots (consumed/scrapped) are excluded from readiness evidence.
+    is_active = models.BooleanField(default=True)
 
     def __str__(self) -> str:
         return f"{self.material.name} — lot {self.lot_number}"
